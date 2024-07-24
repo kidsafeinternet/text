@@ -47,8 +47,15 @@ $readmeHtml = $Parsedown->text($readme);
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold mb-4">PHP Files</h1>
         <ul class="list-disc list-inside mb-8">
-            <?php foreach ($files as $file): ?>
-                <li class="ml-4"><a href="<?= htmlspecialchars($file) ?>" class="text-blue-500 hover:underline"><?= htmlspecialchars($file) ?></a></li>
+            <?php foreach ($files as $file): 
+                if ($file === 'blocked.php') {
+                    $name = 'Blocked Words/Phrases List';
+                }
+                else {
+                    $name = $file;
+                }
+                ?>
+                <li class="ml-4"><a href="<?= htmlspecialchars($file) ?>" class="text-blue-500 hover:underline"><?= $name ?></a></li>
             <?php endforeach; ?>
         </ul>
         <h2 class="text-2xl font-semibold mb-4">README</h2>
