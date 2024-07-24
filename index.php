@@ -17,7 +17,7 @@ $readmeHtml = $Parsedown->text($readme);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHP Files and README</title>
+    <title>KKS - Text Classification</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         pre {
@@ -45,7 +45,7 @@ $readmeHtml = $Parsedown->text($readme);
 </head>
 <body class="bg-gray-100 text-gray-900">
     <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-4">PHP Files</h1>
+        <h1 class="text-3xl font-bold mb-4">Directory</h1>
         <ul class="list-disc list-inside mb-8">
             <?php foreach ($files as $file): 
                 if ($file === 'blocked.php') {

@@ -3,7 +3,6 @@ Profane text classification.
 
 # How to Use
 To use the text classification, you can either make a `GET` or a `POST` request.
-
 Use the following as a guide:
 
 ```
@@ -12,5 +11,10 @@ blacklisted => words,or phrases to blacklist
 input => the input string to check
 ```
 
-> **NOTE:**
-> Please note that there are no spaces after the commas.
+**NOTE:**
+Whitelisted words/phrases have priority. If a word is in whitelist and blacklist, it will be whitelisted.
+
+<br>
+
+**NOTE:**
+Please note that there are no spaces after the commas.
