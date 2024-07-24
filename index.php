@@ -1,5 +1,5 @@
 <?php
-require 'vendor/autoload.php';
+require 'Parsedown.php';
 
 // Display a page with links to all php files and display the readme file
 $files = glob('*.php');
