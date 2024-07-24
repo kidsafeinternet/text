@@ -1,6 +1,6 @@
 <?php
 // Read the profane words/phrases from a text file and filter out lines starting with >>>
-$profaneWords = array_filter(file('blocked.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES), function($line) {
+$profaneWords = array_filter(file('raw/blocked.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES), function($line) {
     return strpos($line, '>>>') !== 0;
 });
 
