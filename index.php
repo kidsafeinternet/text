@@ -5,7 +5,7 @@ require 'Parsedown.php';
 $files = glob('*.php');
 // Remove index.php
 $files = array_filter($files, function ($file) {
-    return $file !== 'index.php';
+    return $file !== 'index.php' && $file !== 'Parsedown.php';
 });
 $readme = file_get_contents('README.md');
 
