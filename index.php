@@ -55,10 +55,6 @@ $readmeHtml = $Parsedown->text($readme);
         <hr>
         <div class="prose">
             <?= $readmeHtml ?>
-            <?php
-            // Display the source code of the html README file
-            echo nl2br(htmlspecialchars($readmeHtml));
-            ?>
         </div>
     </div>
 </body>
