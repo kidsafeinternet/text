@@ -11,3 +11,6 @@
  blacklisted => words,or phrases to blacklist
  input => the input string to check
  ```
+
+> [!NOTE]
+> Please note that there are no spaces after the commas.
