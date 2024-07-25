@@ -10,8 +10,8 @@ $whitelisted = isset($_REQUEST['whitelisted']) ? $_REQUEST['whitelisted'] : '';
 $blacklisted = isset($_REQUEST['blacklisted']) ? $_REQUEST['blacklisted'] : '';
 
 // Convert the whitelist and blacklist to arrays
-$whitelisted = explode(',', $whitelisted);
-$blacklisted = explode(',', $blacklisted);
+$whitelisted = array_map('trim', explode(',', $whitelisted));
+$blacklisted = array_map('trim', explode(',', $blacklisted));
 
 // Check for profane words/phrases
 $foundProfaneWords = [];
@@ -19,14 +19,14 @@ $foundProfaneWords = [];
 // Check against the profane words list
 foreach ($profaneWords as $profaneWord) {
     // Use word boundaries to match whole words/phrases
-    if (preg_match('/\b' . preg_quote($profaneWord, '/') . '\b/i', $input) && !in_array($profaneWord, $whitelisted)) {
+    if (!empty($profaneWord) && preg_match('/\b' . preg_quote($profaneWord, '/') . '\b/i', $input) && !in_array($profaneWord, $whitelisted)) {
         $foundProfaneWords[] = $profaneWord;
     }
 }
 
 // Check against the blacklist
 foreach ($blacklisted as $blacklistedWord) {
-    if (preg_match('/\b' . preg_quote($blacklistedWord, '/') . '\b/i', $input) && !in_array($blacklistedWord, $whitelisted)) {
+    if (!empty($blacklistedWord) && preg_match('/\b' . preg_quote($blacklistedWord, '/') . '\b/i', $input) && !in_array($blacklistedWord, $whitelisted)) {
         $foundProfaneWords[] = $blacklistedWord;
     }
 }
@@ -51,12 +51,15 @@ if (empty($input)) {
             input {
                 padding: 0.5rem;
             }
+            textarea {
+                padding: 0.5rem;
+            }
         </style>
     </head>
     <body class="bg-gray-100 text-gray-900">
         <div class="container mx-auto p-4">
             <h1 class="text-3xl font-bold mb-4">Profanity Checker</h1>
-            <form action="detect.php" method="post" class="bg-white p-6 rounded shadow-md">
+            <form id="profanityForm" action="detect.php" method="post" class="bg-white p-6 rounded shadow-md">
                 <div class="mb-4">
                     <label for="input" class="block text-sm font-medium text-gray-700">Input Text</label>
                     <textarea id="input" name="input" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
@@ -73,7 +76,23 @@ if (empty($input)) {
                     <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Check</button>
                 </div>
             </form>
+            <div id="jsonResponse" class="bg-gray-200 p-4 rounded mt-4"></div>
         </div>
+        <script>
+            document.getElementById('profanityForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+                fetch('detect.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('jsonResponse').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        </script>
     </body>
     </html>
     <?php
@@ -84,6 +103,8 @@ if (empty($input)) {
 header('Content-Type: application/json');
 echo json_encode([
     'input' => $input,
-    'profane_words_found' => $foundProfaneWords,
+    'whitelisted' => $whitelisted,
+    'blacklisted' => $blacklisted,
+    'found' => $foundProfaneWords,
     'profane' => $hasProfaneWords ? 1 : 0
 ]);
