@@ -44,6 +44,7 @@ header('Content-Type: text/html');
             position: fixed;
             top: 1rem;
             right: 1rem;
+            padding-top: 5rem;
         }
 
         html {
@@ -69,15 +70,12 @@ header('Content-Type: text/html');
             </div>
             <div class="w-1/4 pl-4 sticky-nav">
                 <h2 class="text-xl font-semibold mb-2">Jump to Section</h2>
-                <div class="w-1/4 pl-4 sticky-nav">
-                    <h2 class="text-xl font-semibold mb-2">Jump to Section</h2>
-                    <ul class="list-none">
-                        <li><a href="#top" class="text-blue-500 hover:underline">Top</a></li>
-                        <?php foreach ($dictionary as $letter => $words) : ?>
-                            <li><a href="#<?= htmlspecialchars($letter) ?>" class="text-blue-500 hover:underline"><?= htmlspecialchars($letter) ?></a></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
+                <ul class="flex flex-wrap list-none">
+                    <li class="mr-2 mb-2"><a href="#top" class="text-blue-500 hover:underline">Top</a></li>
+                    <?php foreach ($dictionary as $letter => $words) : ?>
+                        <li class="mr-2 mb-2"><a href="#<?= htmlspecialchars($letter) ?>" class="text-blue-500 hover:underline"><?= htmlspecialchars($letter) ?></a></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
         </div>
 </body>
