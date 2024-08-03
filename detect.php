@@ -4,6 +4,11 @@ $profaneWords = array_filter(file('raw/blocked.txt', FILE_IGNORE_NEW_LINES | FIL
     return strpos($line, '>>>') !== 0;
 });
 
+// Remove the part after | for each word
+$profaneWords = array_map(function($line) {
+    return explode('|', $line)[0];
+}, $profaneWords);
+
 // Get the input words/phrases from the GET or POST request
 $input = isset($_REQUEST['input']) ? $_REQUEST['input'] : '';
 $whitelisted = isset($_REQUEST['whitelisted']) ? $_REQUEST['whitelisted'] : '';
