@@ -1,48 +1,108 @@
 <?php
-// Read the profane words/phrases from a text file and filter out lines starting with >>>
-$profaneWords = array_filter(file('raw/blocked.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES), function($line) {
-    return strpos($line, '>>>') !== 0;
-});
 
-// Remove the part after | for each word
-$profaneWords = array_map(function($line) {
-    return explode('|', $line)[0];
-}, $profaneWords);
+class TrieNode {
+    public $children = [];
+    public $isEndOfWord = false;
+}
 
-// Get the input words/phrases from the GET or POST request
-$input = isset($_REQUEST['input']) ? $_REQUEST['input'] : '';
-$whitelisted = isset($_REQUEST['whitelisted']) ? $_REQUEST['whitelisted'] : '';
-$blacklisted = isset($_REQUEST['blacklisted']) ? $_REQUEST['blacklisted'] : '';
+class Trie {
+    private $root;
 
-// Convert the whitelist and blacklist to arrays
-$whitelisted = array_map('trim', explode(',', $whitelisted));
-$blacklisted = array_map('trim', explode(',', $blacklisted));
+    public function __construct() {
+        $this->root = new TrieNode();
+    }
+
+    public function insert($word) {
+        $node = $this->root;
+        $word = strtolower($word);
+        for ($i = 0; $i < strlen($word); $i++) {
+            $char = $word[$i];
+            if (!isset($node->children[$char])) {
+                $node->children[$char] = new TrieNode();
+            }
+            $node = $node->children[$char];
+        }
+        $node->isEndOfWord = true;
+    }
+
+    public function search($word) {
+        $node = $this->root;
+        $word = strtolower($word);
+        for ($i = 0; $i < strlen($word); $i++) {
+            $char = $word[$i];
+            if (!isset($node->children[$char])) {
+                return false;
+            }
+            $node = $node->children[$char];
+        }
+        return $node->isEndOfWord;
+    }
+}
+
+// Function to read and sanitize profane words from a file
+function getProfaneWords($filePath) {
+    if (!file_exists($filePath)) {
+        return [];
+    }
+
+    $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $profaneWords = array_filter($lines, function ($line) {
+        return strpos($line, '>>>') !== 0; // Comments start with >>>
+    });
+
+    return array_map(function ($line) {
+        return htmlspecialchars(explode('|', $line)[0]);
+    }, $profaneWords);
+}
+
+// Function to sanitize and validate input
+function sanitizeInput($input) {
+    return htmlspecialchars(trim($input));
+}
+
+// Function to convert comma-separated string to array
+function convertToArray($string) {
+    return array_map('trim', explode(',', $string));
+}
+
+// Main script
+$profaneWords = getProfaneWords('raw/blocked.txt');
+$input = isset($_REQUEST['input']) ? sanitizeInput($_REQUEST['input']) : '';
+$whitelisted = isset($_REQUEST['whitelisted']) ? sanitizeInput($_REQUEST['whitelisted']) : '';
+$blacklisted = isset($_REQUEST['blacklisted']) ? sanitizeInput($_REQUEST['blacklisted']) : '';
+
+$whitelisted = convertToArray($whitelisted);
+$blacklisted = convertToArray($blacklisted);
+
+// Build the Trie for profane words
+$trie = new Trie();
+foreach ($profaneWords as $word) {
+    $trie->insert($word);
+}
 
 // Check for profane words/phrases
 $foundProfaneWords = [];
 
-// Check against the profane words list
-foreach ($profaneWords as $profaneWord) {
-    // Use word boundaries to match whole words/phrases
-    if (!empty($profaneWord) && preg_match('/\b' . preg_quote($profaneWord, '/') . '\b/i', $input) && !in_array($profaneWord, $whitelisted)) {
-        $foundProfaneWords[] = $profaneWord;
+// Function to check for profane words using Trie
+function checkProfaneWords($trie, $input, $whitelisted) {
+    $foundWords = [];
+    $words = explode(' ', $input);
+    foreach ($words as $word) {
+        if ($trie->search($word) && !in_array($word, $whitelisted)) {
+            $foundWords[] = $word;
+        }
     }
+    return $foundWords;
 }
 
-// Check against the blacklist
-foreach ($blacklisted as $blacklistedWord) {
-    if (!empty($blacklistedWord) && preg_match('/\b' . preg_quote($blacklistedWord, '/') . '\b/i', $input) && !in_array($blacklistedWord, $whitelisted)) {
-        $foundProfaneWords[] = $blacklistedWord;
-    }
-}
+$foundProfaneWords = array_merge(
+    checkProfaneWords($trie, $input, $whitelisted),
+    checkProfaneWords($trie, implode(' ', $blacklisted), $whitelisted)
+);
 
-// Remove duplicates from found profane words
 $foundProfaneWords = array_unique($foundProfaneWords);
-
-// Determine if any profane words were found
 $hasProfaneWords = !empty($foundProfaneWords);
 
-// If no input is provided, display the GUI form
 if (empty($input)) {
     ?>
     <!DOCTYPE html>
@@ -53,10 +113,7 @@ if (empty($input)) {
         <title>Profanity Checker</title>
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
         <style>
-            input {
-                padding: 0.5rem;
-            }
-            textarea {
+            input, textarea {
                 padding: 0.5rem;
             }
         </style>
@@ -104,7 +161,7 @@ if (empty($input)) {
     exit;
 }
 
-// Return the result as a JSON response
+// Output the result as JSON
 header('Content-Type: application/json');
 echo json_encode([
     'input' => $input,
